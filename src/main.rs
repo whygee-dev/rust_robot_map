@@ -3,6 +3,7 @@ mod renderer;
 mod robot;
 mod shared;
 mod simulation;
+mod station;
 use crate::simulation::simulation::start_simulation;
 use parking_lot::Mutex;
 use rand::rngs::StdRng;

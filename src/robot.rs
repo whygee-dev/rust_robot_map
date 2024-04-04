@@ -2,8 +2,9 @@ pub mod robot {
     use std::collections::HashSet;
 
     use crate::{
-        map::map::{Obstacle, Resource},
+        map::map::{DiscoveredCoord, Obstacle, Resource},
         shared::shared::Coord,
+        station::station::Station,
     };
 
     pub struct Modules {
@@ -25,15 +26,14 @@ pub mod robot {
     pub struct RobotStorage {
         energy: u32,
         minerals: u32,
-        scientific_interest: u32,
+        pub discovered_coords: HashSet<DiscoveredCoord>,
     }
 
     pub struct Robot {
         id: u32,
         pub position: Coord,
         modules: Modules,
-        storage: RobotStorage,
-        pub seen: HashSet<Coord>,
+        pub storage: RobotStorage,
     }
 
     impl Robot {
@@ -45,9 +45,8 @@ pub mod robot {
                 storage: RobotStorage {
                     energy: 0,
                     minerals: 0,
-                    scientific_interest: 0,
+                    discovered_coords: HashSet::new(),
                 },
-                seen: HashSet::new(),
             }
         }
 
@@ -55,6 +54,7 @@ pub mod robot {
             &mut self,
             resources: &mut Vec<Resource>,
             obstacles: &Vec<Obstacle>,
+            station: &Station,
             new_x: u32,
             new_y: u32,
         ) {
@@ -70,13 +70,23 @@ pub mod robot {
                         self.storage.minerals += collected_resource.minerals;
                         collected_resource.minerals = 0
                     }
-                    if collected_resource.scientific_interest > 0
-                        && self.modules.scientific_analyzer
-                    {
-                        self.storage.scientific_interest += collected_resource.scientific_interest;
-                        collected_resource.scientific_interest = 0
-                    }
+                    self.storage.discovered_coords.insert((
+                        new_x,
+                        new_y,
+                        collected_resource.scientific_interest && self.modules.scientific_analyzer,
+                    ));
                 });
+
+            if new_x == station.position.0 && new_y == station.position.1 {
+                station.store_energy(self.storage.energy);
+                self.storage.energy = 0;
+
+                station.store_minerals(self.storage.minerals);
+                self.storage.minerals = 0;
+
+                station.store_discovered_coords(&self.storage.discovered_coords);
+                self.storage.discovered_coords.clear();
+            }
 
             if !obstacles
                 .iter()
@@ -84,7 +94,6 @@ pub mod robot {
                 .is_some()
             {
                 self.position = (new_x, new_y);
-                self.seen.insert((new_x, new_y));
             }
         }
     }

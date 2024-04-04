@@ -26,8 +26,6 @@ pub mod simulation {
 
         let map = generate_map(map_width, map_height, &_rng);
 
-        println!("{} {}", map_width, map_height);
-
         for step in 0..steps {
             println!("Step {step}");
 
@@ -41,16 +39,31 @@ pub mod simulation {
                     let (new_x, new_y) = map.get_next_coords(
                         current_x,
                         current_y,
-                        &robot.seen,
+                        &robot.storage.discovered_coords,
                         &map.obstacles,
                         &_rng,
                     );
 
-                    robot.move_and_collect(&mut map.resources.lock(), &map.obstacles, new_x, new_y);
+                    robot.move_and_collect(
+                        &mut map.resources.lock(),
+                        &map.obstacles,
+                        &map.station,
+                        new_x,
+                        new_y,
+                    );
                 });
             }
 
-            thread::sleep(Duration::from_millis(100));
+            {
+                match map.station.create_robots_if_able(&_rng) {
+                    Some(new_robots) => {
+                        map.robots.lock().extend(new_robots);
+                    }
+                    None => {}
+                }
+            }
+
+            thread::sleep(Duration::from_millis(10));
         }
     }
 }

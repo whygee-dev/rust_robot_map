@@ -50,10 +50,6 @@ pub mod map {
         pub fn get_scientific_interest(&self) -> &bool {
             &self.scientific_interest
         }
-
-        pub fn set_scientific_interest(&mut self, scientific_interest: bool) {
-            self.scientific_interest = scientific_interest;
-        }
     }
 
     pub type Obstacle = (u32, u32, ObstacleType);

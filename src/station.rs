@@ -2,7 +2,7 @@ pub mod station {
     use std::collections::HashSet;
 
     use parking_lot::Mutex;
-    use rand::{rngs::StdRng, Rng, SeedableRng};
+    use rand::{rngs::StdRng, Rng, SeedableRng as _};
 
     use crate::{
         map::map::DiscoveredCoord,

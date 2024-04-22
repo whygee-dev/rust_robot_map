@@ -31,12 +31,20 @@ pub mod robot {
 
     pub struct Robot {
         id: u32,
-        pub position: Coord,
+        position: Coord,
         modules: Modules,
-        pub storage: RobotStorage,
+        storage: RobotStorage,
     }
 
     impl Robot {
+        pub fn get_position(&self) -> &Coord {
+            &self.position
+        }
+
+        pub fn get_storage(&self) -> &RobotStorage {
+            &self.storage
+        }
+
         pub fn new(id: u32, position: Coord, modules: Modules) -> Robot {
             Robot {
                 id,
@@ -60,24 +68,25 @@ pub mod robot {
         ) {
             resources
                 .iter_mut()
-                .filter(|r| r.position == self.position)
+                .filter(|r| *r.get_position() == self.position)
                 .for_each(|collected_resource| {
-                    if collected_resource.energy > 0 && self.modules.energy_collector {
-                        self.storage.energy += collected_resource.energy;
-                        collected_resource.energy = 0
+                    if *collected_resource.get_energy() > 0 && self.modules.energy_collector {
+                        self.storage.energy += *collected_resource.get_energy();
+                        collected_resource.set_energy(0);
                     }
-                    if collected_resource.minerals > 0 && self.modules.miner {
-                        self.storage.minerals += collected_resource.minerals;
-                        collected_resource.minerals = 0
+                    if *collected_resource.get_minerals() > 0 && self.modules.miner {
+                        self.storage.minerals += *collected_resource.get_minerals();
+                        collected_resource.set_minerals(0);
                     }
                     self.storage.discovered_coords.insert((
                         new_x,
                         new_y,
-                        collected_resource.scientific_interest && self.modules.scientific_analyzer,
+                        *collected_resource.get_scientific_interest()
+                            && self.modules.scientific_analyzer,
                     ));
                 });
 
-            if new_x == station.position.0 && new_y == station.position.1 {
+            if new_x == station.get_position().0 && new_y == station.get_position().1 {
                 station.store_energy(self.storage.energy);
                 self.storage.energy = 0;
 

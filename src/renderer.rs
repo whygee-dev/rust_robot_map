@@ -7,16 +7,20 @@ pub mod renderer {
     pub fn render_map(map: &Map) {
         let _ = Command::new("clear").status();
 
-        for y in 0..map.height {
-            for x in 0..map.width {
-                let is_station = x == map.station.position.0 && y == map.station.position.1;
+        for y in 0..*map.get_height() {
+            for x in 0..*map.get_width() {
+                let is_station = x == map.get_station().get_position().0
+                    && y == map.get_station().get_position().1;
                 let is_robot = map
-                    .robots
+                    .get_robots()
                     .lock()
                     .iter()
-                    .any(|robot| robot.position == (x, y));
+                    .any(|robot| *robot.get_position() == (x, y));
 
-                let is_obstacle = map.obstacles.iter().any(|&(ox, oy, _)| ox == x && oy == y);
+                let is_obstacle = map
+                    .get_obstacles()
+                    .iter()
+                    .any(|&(ox, oy, _)| ox == x && oy == y);
 
                 if is_station {
                     print!("{}", "S ".green());

@@ -2,7 +2,7 @@ pub mod station {
     use std::collections::HashSet;
 
     use parking_lot::Mutex;
-    use rand::{rngs::StdRng, Rng};
+    use rand::{rngs::StdRng, Rng, SeedableRng};
 
     use crate::{
         map::map::DiscoveredCoord,
@@ -11,16 +11,29 @@ pub mod station {
     };
 
     pub struct Station {
-        pub position: Coord,
-        pub stored_energy: Mutex<u32>,
-        pub stored_minerals: Mutex<u32>,
-        pub discovered_coords: Mutex<HashSet<DiscoveredCoord>>,
+        position: Coord,
+        stored_energy: Mutex<u32>,
+        stored_minerals: Mutex<u32>,
+        discovered_coords: Mutex<HashSet<DiscoveredCoord>>,
     }
 
     static ENERGY_PER_ROBOT: u32 = 1000;
     static MINERALS_PER_ROBOT: u32 = 1000;
 
     impl Station {
+        pub fn new() -> Station {
+            Station {
+                position: (0, 0),
+                stored_energy: Mutex::new(0),
+                stored_minerals: Mutex::new(0),
+                discovered_coords: Mutex::new(HashSet::new()),
+            }
+        }
+
+        pub fn get_position(&self) -> &Coord {
+            &self.position
+        }
+
         pub fn store_energy(&self, energy: u32) {
             let mut stored_energy = self.stored_energy.lock();
             *stored_energy = stored_energy.checked_add(energy).unwrap();
@@ -88,5 +101,61 @@ pub mod station {
         let stored_energy = *station.stored_energy.lock();
 
         assert_eq!(stored_energy, 150);
+    }
+
+    #[test]
+    fn test_store_minerals() {
+        let station = Station {
+            position: (0, 0),
+            stored_energy: Mutex::new(0),
+            stored_minerals: Mutex::new(100),
+            discovered_coords: Mutex::new(HashSet::new()),
+        };
+
+        station.store_minerals(50);
+
+        let stored_minerals = *station.stored_minerals.lock();
+
+        assert_eq!(stored_minerals, 150);
+    }
+
+    #[test]
+    fn test_store_discovered_coords() {
+        let station = Station {
+            position: (0, 0),
+            stored_energy: Mutex::new(0),
+            stored_minerals: Mutex::new(0),
+            discovered_coords: Mutex::new(HashSet::new()),
+        };
+
+        let mut coords = HashSet::new();
+        coords.insert((1, 2, false));
+        coords.insert((3, 4, true));
+
+        station.store_discovered_coords(&coords);
+
+        let discovered_coords = station.discovered_coords.lock();
+
+        assert_eq!(discovered_coords.len(), 2);
+        assert!(discovered_coords.contains(&(1, 2, false)));
+        assert!(discovered_coords.contains(&(3, 4, true)));
+    }
+
+    #[test]
+    fn test_create_robots_if_able() {
+        let station = Station {
+            position: (0, 0),
+            stored_energy: Mutex::new(2000),
+            stored_minerals: Mutex::new(2000),
+            discovered_coords: Mutex::new(HashSet::new()),
+        };
+
+        let rng = Mutex::new(StdRng::from_entropy());
+
+        let robots = station.create_robots_if_able(&rng).unwrap();
+
+        assert_eq!(robots.len(), 2);
+        assert_eq!(robots[0].get_position(), &(0, 0));
+        assert_eq!(robots[1].get_position(), &(0, 0));
     }
 }

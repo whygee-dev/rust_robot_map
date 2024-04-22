@@ -20,25 +20,79 @@ pub mod map {
 
     #[derive(Debug)]
     pub struct Resource {
-        pub position: Coord,
-        pub energy: u32,
-        pub minerals: u32,
-        pub scientific_interest: bool,
+        position: Coord,
+        energy: u32,
+        minerals: u32,
+        scientific_interest: bool,
+    }
+
+    impl Resource {
+        pub fn get_position(&self) -> &Coord {
+            &self.position
+        }
+
+        pub fn get_energy(&self) -> &u32 {
+            &self.energy
+        }
+
+        pub fn set_energy(&mut self, energy: u32) {
+            self.energy = energy;
+        }
+
+        pub fn get_minerals(&self) -> &u32 {
+            &self.minerals
+        }
+
+        pub fn set_minerals(&mut self, minerals: u32) {
+            self.minerals = minerals;
+        }
+
+        pub fn get_scientific_interest(&self) -> &bool {
+            &self.scientific_interest
+        }
+
+        pub fn set_scientific_interest(&mut self, scientific_interest: bool) {
+            self.scientific_interest = scientific_interest;
+        }
     }
 
     pub type Obstacle = (u32, u32, ObstacleType);
     pub type DiscoveredCoord = (u32, u32, bool); // (x, y is_scientific_interest)
 
     pub struct Map {
-        pub width: u32,
-        pub height: u32,
-        pub robots: Mutex<Vec<Robot>>,
-        pub resources: Mutex<Vec<Resource>>,
-        pub obstacles: Vec<Obstacle>,
-        pub station: Station,
+        width: u32,
+        height: u32,
+        robots: Mutex<Vec<Robot>>,
+        resources: Mutex<Vec<Resource>>,
+        obstacles: Vec<Obstacle>,
+        station: Station,
     }
 
     impl Map {
+        pub fn get_width(&self) -> &u32 {
+            &self.width
+        }
+
+        pub fn get_height(&self) -> &u32 {
+            &self.height
+        }
+
+        pub fn get_robots(&self) -> &Mutex<Vec<Robot>> {
+            &self.robots
+        }
+
+        pub fn get_resources(&self) -> &Mutex<Vec<Resource>> {
+            &self.resources
+        }
+
+        pub fn get_obstacles(&self) -> &Vec<Obstacle> {
+            &self.obstacles
+        }
+
+        pub fn get_station(&self) -> &Station {
+            &self.station
+        }
+
         pub fn get_next_coords(
             &self,
             current_x: u32,
@@ -139,12 +193,7 @@ pub mod map {
             robots: Mutex::new(robots),
             resources: Mutex::new(resources),
             obstacles,
-            station: Station {
-                position: (0, 0),
-                stored_energy: Mutex::new(0),
-                stored_minerals: Mutex::new(0),
-                discovered_coords: Mutex::new(HashSet::new()),
-            },
+            station: Station::new(),
         }
     }
 }

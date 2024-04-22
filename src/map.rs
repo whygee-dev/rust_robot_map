@@ -4,15 +4,19 @@ pub mod map {
     use parking_lot::Mutex;
     use rand::{rngs::StdRng, Rng, RngCore};
 
-    use crate::robot::robot::{Modules, Robot};
-    use crate::shared::shared::{add, generate_unique_ids, Coord};
-    use crate::station::station::Station;
+    use crate::{
+        robot::robot::{Modules, Robot},
+        shared::shared::{add, generate_unique_ids, Coord},
+        station::station::Station,
+    };
     use noise::{NoiseFn, Perlin};
 
     pub enum ObstacleType {
         Rock,
         Pit,
     }
+
+    const INITIAL_ROBOTS_COUNT: usize = 3;
 
     #[derive(Debug)]
     pub struct Resource {
@@ -114,26 +118,20 @@ pub mod map {
             }
         }
 
-        let unique_ids = generate_unique_ids(&_rng, 6);
+        let unique_ids = generate_unique_ids(&_rng, INITIAL_ROBOTS_COUNT);
         let mut unique_ids_iter = unique_ids.iter();
 
-        robots.push(Robot::new(
-            *unique_ids_iter.next().unwrap(),
-            (0, 0),
-            Modules::new(true, false, false),
-        ));
-
-        robots.push(Robot::new(
-            *unique_ids_iter.next().unwrap(),
-            (0, 0),
-            Modules::new(false, true, false),
-        ));
-
-        robots.push(Robot::new(
-            *unique_ids_iter.next().unwrap(),
-            (0, 0),
-            Modules::new(false, false, true),
-        ));
+        for i in 0..INITIAL_ROBOTS_COUNT {
+            robots.push(Robot::new(
+                *unique_ids_iter.next().unwrap(),
+                (0, 0),
+                Modules::new(
+                    i == 0 || i % 3 == 0,
+                    i == 1 || i % 3 == 1,
+                    i == 2 || i % 3 == 2,
+                ),
+            ));
+        }
 
         Map {
             width,

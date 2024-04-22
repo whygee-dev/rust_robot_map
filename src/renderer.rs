@@ -1,4 +1,5 @@
 pub mod renderer {
+    use colored::Colorize;
     use std::process::Command;
 
     use crate::map::map::Map;
@@ -18,13 +19,13 @@ pub mod renderer {
                 let is_obstacle = map.obstacles.iter().any(|&(ox, oy, _)| ox == x && oy == y);
 
                 if is_station {
-                    print!("S ");
+                    print!("{}", "S ".green());
                 } else if is_robot {
-                    print!("R ");
+                    print!("{}", "R ".blue());
                 } else if is_obstacle {
-                    print!("# ");
+                    print!("{}", "# ".red());
                 } else {
-                    print!(". ");
+                    print!("{}", ". ".white());
                 }
             }
 

@@ -1,8 +1,7 @@
 pub mod simulation {
-    use std::{thread, time::Duration};
+    use std::time::{Duration, Instant};
 
-    use crate::map::map::generate_map;
-    use crate::renderer::renderer::render_map;
+    use crate::{map::map::generate_map, renderer::renderer::render_map};
     use parking_lot::Mutex;
     use rand::{rngs::StdRng, Rng};
     use rayon::prelude::*;
@@ -13,10 +12,11 @@ pub mod simulation {
         max_width: u32,
         min_height: u32,
         max_height: u32,
-        steps: u32,
     ) {
         let map_width: u32;
         let map_height: u32;
+        let mut last_tick = Instant::now();
+        let tick_rate = Duration::from_millis(100);
 
         {
             let mut rng = _rng.lock();
@@ -26,8 +26,12 @@ pub mod simulation {
 
         let map = generate_map(map_width, map_height, &_rng);
 
-        for step in 0..steps {
-            println!("Step {step}");
+        loop {
+            if last_tick.elapsed() < tick_rate {
+                continue;
+            }
+
+            last_tick = Instant::now();
 
             {
                 render_map(&map);
@@ -62,8 +66,6 @@ pub mod simulation {
                     None => {}
                 }
             }
-
-            thread::sleep(Duration::from_millis(10));
         }
     }
 }
